@@ -52,18 +52,38 @@ int indexCount;
     
     // ビデオデータ出力の作成
     NSMutableDictionary* settings;
-    AVCaptureVideoDataOutput* dataOutput;
-    settings = [NSMutableDictionary dictionary];
-    [settings setObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
-                 forKey:(id)kCVPixelBufferPixelFormatTypeKey];
-    dataOutput = [[AVCaptureVideoDataOutput alloc] init];
-    dataOutput.videoSettings = settings;
-    [dataOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
+//    AVCaptureVideoDataOutput* dataOutput;
+//    settings = [NSMutableDictionary dictionary];
+//    [settings setObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
+//                 forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+//    dataOutput = [[AVCaptureVideoDataOutput alloc] init];
+//    dataOutput.videoSettings = settings;
+//    [dataOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
     
     // セッションの作成
     session = [[AVCaptureSession alloc] init];
+    
+    // 入力の作成
     [session addInput:deviceInput];
-    [session addOutput:dataOutput];
+    
+    // AVCaptureStillImageOutputで静止画出力を作る
+    stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
+    NSDictionary *outputSettings = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                    AVVideoCodecJPEG, AVVideoCodecKey, nil];
+    stillImageOutput.outputSettings = outputSettings;
+
+    // 出力の作成
+    [session addOutput:stillImageOutput];
+    
+    // プレビューレイヤーを作成
+    AVCaptureVideoPreviewLayer *videoPreviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:session];
+    // リサイズ形式を設定
+    videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    // フレームサイズを設定
+    videoPreviewLayer.frame = self.view.bounds;
+    // ビューのサブレイヤーにビデオ出力レイヤーを追加
+    [self.view.layer addSublayer:videoPreviewLayer];
+
     
     if ([session canSetSessionPreset:AVCaptureSessionPresetMedium]) {
         session.sessionPreset = AVCaptureSessionPresetMedium;
@@ -79,9 +99,6 @@ int indexCount;
 	CGFloat y = 0.0f;
 	CGFloat spacing = 50.0f;
 	CGRect tmpFrame = CGRectMake(x, y, width, pickerHeight);
-    
-    _rsImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    [self.view addSubview:_rsImageView];
     
 	pickerView = [[V8HorizontalPickerView alloc] initWithFrame:tmpFrame];
 	pickerView.backgroundColor   = [UIColor clearColor];
@@ -121,51 +138,6 @@ int indexCount;
 - (void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
 	[pickerView scrollToElement:0 animated:NO];
-}
-
-#pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
-
-- (void)captureOutput:(AVCaptureOutput*)captureOutput
-didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-       fromConnection:(AVCaptureConnection*)connection
-{
-    // イメージバッファの取得
-    CVImageBufferRef buffer;
-    buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    
-    // イメージバッファのロック
-    CVPixelBufferLockBaseAddress(buffer, 0);
-    
-    // イメージバッファ情報の取得
-    uint8_t *base;
-    size_t width, height, bytesPerRow;
-    base = CVPixelBufferGetBaseAddress(buffer);
-    width = CVPixelBufferGetWidth(buffer);
-    height = CVPixelBufferGetHeight(buffer);
-    bytesPerRow = CVPixelBufferGetBytesPerRow(buffer);
-    
-    // ビットマップコンテキストの作成
-    CGColorSpaceRef colorSpace;
-    CGContextRef    cgContext;
-    colorSpace = CGColorSpaceCreateDeviceRGB();
-    cgContext = CGBitmapContextCreate(base, width, height, 8, bytesPerRow, colorSpace,
-                                      kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
-    CGColorSpaceRelease(colorSpace);
-    
-    // 画像の作成
-    CGImageRef  cgImage;
-    UIImage*    image;
-    cgImage = CGBitmapContextCreateImage(cgContext);
-    image = [UIImage imageWithCGImage:cgImage scale:1.0f
-                          orientation:UIImageOrientationRight];
-    CGImageRelease(cgImage);
-    CGContextRelease(cgContext);
-    
-    // イメージバッファのアンロック
-    CVPixelBufferUnlockBaseAddress(buffer, 0);
-    
-    // 画像の表示
-    _rsImageView.image = image;
 }
 
 #pragma mark - Button Tap Handlers

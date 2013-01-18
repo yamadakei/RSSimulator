@@ -12,9 +12,10 @@
 
 @class V8HorizontalPickerView;
 
-@interface ViewController : UIViewController <V8HorizontalPickerViewDelegate, V8HorizontalPickerViewDataSource, AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface ViewController : UIViewController <V8HorizontalPickerViewDelegate, V8HorizontalPickerViewDataSource>
 {
     AVCaptureSession *session;
+    AVCaptureStillImageOutput *stillImageOutput;
 }
 @property (strong, nonatomic) UIImageView *rsImageView;
 
