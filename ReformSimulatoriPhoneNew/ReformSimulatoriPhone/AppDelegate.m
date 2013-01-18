@@ -32,7 +32,6 @@
         [_imageItems addObject:item.image];
         [_logoItems addObject:item.image];
         [_descriptionItems addObject:item.image];
-        NSLog(@"%@",_imageItems);
     }
     
     return YES;

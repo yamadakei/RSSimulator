@@ -10,7 +10,7 @@
 
 #pragma mark - Internal Method Interface
 @interface V8HorizontalPickerView () {
-	UIScrollView *_scrollView;
+//	UIScrollView *_scrollView;
 
 	// collection of widths of each element.
 	NSMutableArray *elementWidths;
@@ -105,7 +105,6 @@
 		self.autoresizesSubviews = YES;
 	}
     
-    NSLog(@"init");
 	return self;
 }
 
@@ -113,7 +112,6 @@
 #pragma mark - LayoutSubViews
 - (void)layoutSubviews {
 	[super layoutSubviews];
-    NSLog(@"layout subviews");
 	BOOL adjustWhenFinished = NO;
 
 	if (!dataHasBeenLoaded) {
@@ -167,7 +165,6 @@
 	for (int i = firstNeededElement; i <= lastNeededElement; i++) {
 		view = nil; // paranoia
 		view = [_scrollView viewWithTag:[self tagForElementAtIndex:i]];
-        NSLog(@"%d", numberOfElements);
 		if (!view) {
 			if (i < numberOfElements) { // make sure we are not requesting data out of range
 				if (self.delegate && [self.delegate respondsToSelector:titleForElementSelector]) {
@@ -753,6 +750,17 @@
     CGAffineTransform transform = CGAffineTransformMakeScale(recognizer.scale, recognizer.scale);
     // you can implement any int/float value in context of what scale you want to zoom in or out
     self.transform = transform;
+}
+
+//added by yamada
+- (UIView *) getSelecedView:(NSInteger)index
+{
+    
+}
+
+- (NSInteger) getCurrentIndex
+{
+    
 }
 
 @end

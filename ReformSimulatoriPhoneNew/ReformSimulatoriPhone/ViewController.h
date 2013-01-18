@@ -16,9 +16,9 @@
 {
     AVCaptureSession *session;
     AVCaptureStillImageOutput *stillImageOutput;
+    UIImage *capturedImage;
 }
-@property (strong, nonatomic) UIImageView *rsImageView;
-
+@property (nonatomic) UIImageView *previewImageView;
 @property (nonatomic) V8HorizontalPickerView *pickerView;
 @property (nonatomic) UIButton *nextButton;
 @property (nonatomic) UIButton *shutterButton;

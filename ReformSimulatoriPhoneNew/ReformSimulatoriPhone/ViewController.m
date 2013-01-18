@@ -25,7 +25,6 @@ int indexCount;
 - (id)init {
 	self = [super init];
 	if (self) {
-        NSLog(@"tomagittest");//gitの使用確認の為(一時的な確認のため、後削除します)
 		titleArray = [NSMutableArray arrayWithObjects:@"1.JPG", @"2.JPG", @"3.JPG", @"4.JPG", @"5.JPG", @"6.JPG", @"7.JPG", @"8.JPG", @"9.JPG", @"10.JPG", @"11.JPG", @"12.JPG", @"13.JPG", @"14.JPG", @"15.JPG", nil];
 		indexCount = 0;
 	}
@@ -50,16 +49,6 @@ int indexCount;
     AVCaptureDeviceInput* deviceInput;
     deviceInput = [AVCaptureDeviceInput deviceInputWithDevice:device error:NULL];
     
-    // ビデオデータ出力の作成
-    NSMutableDictionary* settings;
-//    AVCaptureVideoDataOutput* dataOutput;
-//    settings = [NSMutableDictionary dictionary];
-//    [settings setObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
-//                 forKey:(id)kCVPixelBufferPixelFormatTypeKey];
-//    dataOutput = [[AVCaptureVideoDataOutput alloc] init];
-//    dataOutput.videoSettings = settings;
-//    [dataOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-    
     // セッションの作成
     session = [[AVCaptureSession alloc] init];
     
@@ -83,7 +72,6 @@ int indexCount;
     videoPreviewLayer.frame = self.view.bounds;
     // ビューのサブレイヤーにビデオ出力レイヤーを追加
     [self.view.layer addSublayer:videoPreviewLayer];
-
     
     if ([session canSetSessionPreset:AVCaptureSessionPresetMedium]) {
         session.sessionPreset = AVCaptureSessionPresetMedium;
@@ -124,9 +112,6 @@ int indexCount;
 	[shutterButton	setTitle:@"Take Photo" forState:UIControlStateNormal];
 	shutterButton.titleLabel.textColor = [UIColor blackColor];
 	[self.view addSubview:shutterButton];
-
-
-    
 }
 
 - (void)didReceiveMemoryWarning
@@ -152,12 +137,33 @@ int indexCount;
 }
 
 - (void)shutterButtonTapped:(id)sender {
-	// change our title array so we can see a change
-	if ([titleArray count] > 1) {
-		[titleArray removeLastObject];
-	}
+    // コネクションを検索
+    AVCaptureConnection *videoConnection = nil;
+    for (AVCaptureConnection *connection in stillImageOutput.connections) {
+        for (AVCaptureInputPort *port in [connection inputPorts]) {
+            if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
+                videoConnection = connection;
+                break;
+            }
+        }
+        if (videoConnection)
+            break;
+    }
     
-	[pickerView reloadData];
+    // 静止画をキャプチャする
+    [stillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
+                                                   completionHandler:
+     ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
+         if (imageSampleBuffer != NULL) {
+             // キャプチャしたデータを取る
+             NSData *data = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
+             capturedImage = [UIImage imageWithData:data];
+         }
+     }];
+    self.previewImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width/2, self.view.frame.size.height/2)];
+    self.previewImageView.image = capturedImage;
+    [self.view addSubview:self.previewImageView];
+    UIImage *overlayImage = [self.pickerView.scrollView.subviews objectAtIndex:pickerView.currentSelectedIndex];
 }
 
 #pragma mark - HorizontalPickerView DataSource Methods
@@ -172,7 +178,6 @@ int indexCount;
 
 - (NSInteger) horizontalPickerView:(V8HorizontalPickerView *)picker widthForElementAtIndex:(NSInteger)index {
     UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"%@",[titleArray objectAtIndex:index]]];
-    NSLog(@"%f",img.size.width);
 	return img.size.width;
 }
 
