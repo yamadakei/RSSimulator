@@ -20,7 +20,7 @@
 
 @property (nonatomic) V8HorizontalPickerView *pickerView;
 @property (nonatomic) UIButton *nextButton;
-@property (nonatomic) UIButton *reloadButton;
+@property (nonatomic) UIButton *shutterButton;
 
 
 @end

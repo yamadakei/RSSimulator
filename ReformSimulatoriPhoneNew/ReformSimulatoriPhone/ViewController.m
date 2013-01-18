@@ -15,7 +15,7 @@
 
 @implementation ViewController
 @synthesize pickerView;
-@synthesize nextButton, reloadButton;
+@synthesize nextButton, shutterButton;
 
 #pragma mark - iVars
 NSMutableArray *titleArray;
@@ -98,6 +98,16 @@ int indexCount;
 	[nextButton	setTitle:@"Center Element 0" forState:UIControlStateNormal];
 	nextButton.titleLabel.textColor = [UIColor blackColor];
 	[self.view addSubview:nextButton];
+    
+    self.shutterButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+	y = y + tmpFrame.size.height + spacing;
+	tmpFrame = CGRectMake(x, y, width, 50.0f);
+	shutterButton.frame = tmpFrame;
+	[shutterButton addTarget:self action:@selector(shutterButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+	[shutterButton	setTitle:@"Take Photo" forState:UIControlStateNormal];
+	shutterButton.titleLabel.textColor = [UIColor blackColor];
+	[self.view addSubview:shutterButton];
+
 
     
 }
@@ -169,7 +179,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 				forState:UIControlStateNormal];
 }
 
-- (void)reloadButtonTapped:(id)sender {
+- (void)shutterButtonTapped:(id)sender {
 	// change our title array so we can see a change
 	if ([titleArray count] > 1) {
 		[titleArray removeLastObject];
