@@ -160,10 +160,28 @@ int indexCount;
              capturedImage = [UIImage imageWithData:data];
          }
      }];
-    self.previewImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width/2, self.view.frame.size.height/2)];
-    self.previewImageView.image = capturedImage;
+    
     [self.view addSubview:self.previewImageView];
-    UIImage *overlayImage = [self.pickerView.scrollView.subviews objectAtIndex:pickerView.currentSelectedIndex];
+    UIImageView *overlayImageView = [self.pickerView.scrollView.subviews objectAtIndex:0];
+    UIImage *overlayImage = overlayImageView.image;
+//    NSLog(@"count:%d",[pickerView.scrollView.subviews count]);
+    
+    CGSize size = {self.view.frame.size.width,self.view.frame.size.height};
+    UIGraphicsBeginImageContext(size);
+    
+    CGRect rect;
+    rect.origin = CGPointZero;
+    
+    rect.size = size;
+    [capturedImage drawInRect:rect];
+    [overlayImage drawInRect:rect blendMode:kCGBlendModeNormal alpha:0.5];
+    
+    UIImage *resultImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    self.previewImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width/2, self.view.frame.size.height/2)];
+    self.previewImageView.image = resultImage;
+    
 }
 
 #pragma mark - HorizontalPickerView DataSource Methods

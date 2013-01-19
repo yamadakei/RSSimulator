@@ -223,6 +223,8 @@
 			[self scrollToElement:currentSelectedIndex animated:NO];
 		}
 	}
+    
+    NSLog(@"count:%d",[self.scrollView.subviews count]);
 }
 
 
