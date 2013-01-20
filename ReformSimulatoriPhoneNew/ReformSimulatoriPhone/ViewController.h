@@ -17,6 +17,7 @@
     AVCaptureSession *session;
     AVCaptureStillImageOutput *stillImageOutput;
     UIImage *capturedImage;
+    UIImage *resultImage;
 }
 @property (nonatomic) UIImageView *previewImageView;
 @property (nonatomic) V8HorizontalPickerView *pickerView;

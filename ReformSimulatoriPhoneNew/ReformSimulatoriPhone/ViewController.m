@@ -10,6 +10,10 @@
 #import "AppDelegate.h"
 
 @interface ViewController ()
+{
+    NSMutableArray *resultImageArray;
+    int *savedPhotoCount;
+}
 
 @end
 
@@ -21,15 +25,15 @@
 NSMutableArray *titleArray;
 int indexCount;
 
-#pragma mark - Init
-- (id)init {
-	self = [super init];
-	if (self) {
-		titleArray = [NSMutableArray arrayWithObjects:@"1.JPG", @"2.JPG", @"3.JPG", @"4.JPG", @"5.JPG", @"6.JPG", @"7.JPG", @"8.JPG", @"9.JPG", @"10.JPG", @"11.JPG", @"12.JPG", @"13.JPG", @"14.JPG", @"15.JPG", nil];
-		indexCount = 0;
-	}
-	return self;
-}
+//#pragma mark - Init
+//- (id)init {
+//	self = [super init];
+//	if (self) {
+//		titleArray = [NSMutableArray arrayWithObjects:@"1.JPG", @"2.JPG", @"3.JPG", @"4.JPG", @"5.JPG", @"6.JPG", @"7.JPG", @"8.JPG", @"9.JPG", @"10.JPG", @"11.JPG", @"12.JPG", @"13.JPG", @"14.JPG", @"15.JPG", nil];
+//		indexCount = 0;
+//	}
+//	return self;
+//}
 
 #pragma mark - Life Cycle
 
@@ -112,6 +116,45 @@ int indexCount;
 	[shutterButton	setTitle:@"Take Photo" forState:UIControlStateNormal];
 	shutterButton.titleLabel.textColor = [UIColor blackColor];
 	[self.view addSubview:shutterButton];
+    
+    // 合成した写真を入れる配列を初期化
+    resultImageArray = [[NSMutableArray alloc]init];
+    
+    // NSCachesDirectoryを引数に渡し、戻ってきた配列の
+    // 一つ目の要素を取得するとCacheディレクトリを取得できます。
+    NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *cacheDirPath = [array objectAtIndex:0];
+    
+    // まずは、新規で作るディレクトリの絶対パスを作成します。
+    
+    NSString *newCacheDirPath = [cacheDirPath stringByAppendingPathComponent:@"sampleDirectory"];
+    // 次にFileManagerを用いて、ディレクトリの作成を行います。
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error = nil;
+    BOOL created = [fileManager createDirectoryAtPath:newCacheDirPath
+                          withIntermediateDirectories:YES
+                                           attributes:nil
+                                                error:&error];
+    // 作成に失敗した場合は、原因をログに出します。
+    if (!created) {
+        NSLog(@"failed to create directory. reason is %@ - %@", error, error.userInfo);
+    }
+    
+    // 保存するデータ。
+    // 今回は、サーバー上のデータを直接取得して、NSData形式で保持します。
+    NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:@"http://www.yoheim.net/image/108.png"]];
+    
+    // 保存する先のパス
+    NSString *savedPath = [newCacheDirPath stringByAppendingPathComponent:@"110.png"];
+    
+    // 保存処理を行う。
+    // 失敗した場合には、NSErrorのインスタンスを得られるので、
+    // その情報を表示する。
+    BOOL success1 = [fileManager createFileAtPath:savedPath contents:imgData attributes:nil];
+    if (!success1) {
+        NSLog(@"failed to save image. reason is %@ - %@", error, error.userInfo);
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -176,12 +219,32 @@ int indexCount;
     [capturedImage drawInRect:rect];
     [overlayImage drawInRect:rect blendMode:kCGBlendModeNormal alpha:0.5];
     
-    UIImage *resultImage = UIGraphicsGetImageFromCurrentImageContext();
+    resultImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
+    [resultImageArray addObject:resultImage];
+
+    // デバッグ用
     self.previewImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width/2, self.view.frame.size.height/2)];
     self.previewImageView.image = resultImage;
     
+    NSString *filePath = [NSString stringWithFormat:@"%@/%d.png" , [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"],[resultImageArray count]];
+    
+    [self CreatePngImageFile:filePath TargetImage:resultImage];
+    
+}
+
+#pragma mark - Custom Methods
+- (void)CreatePngImageFile:(NSString*)filePath TargetImage:(UIImage*)image
+{
+    //bool result = false;
+    //
+    NSData *data = UIImagePNGRepresentation(image);
+    [data writeToFile:filePath atomically:YES];
+    
+    savedPhotoCount++;
+    //
+    //return result;
 }
 
 #pragma mark - HorizontalPickerView DataSource Methods
